@@ -1,32 +1,34 @@
 /*** Developed by Polina Shlepakova ***/
 
-#include "string.h"
+#include "my_string.h"
 #include <exception>
+#include <cstring>
 
-String::String(): _len(0), _allocator(new char[_len + 1]) {
+MyString::MyString(): _len(0), _allocator(new char[_len + 1]) {
 	_allocator[0] = '\0';
 }
 
-String::String(const char* pc)
-try : _len(countLen(pc)), _allocator(new char[_len + 1]) {
-	copyArr(_allocator, pc, 0, 0, _len + 1);
+MyString::MyString(const char* pc)
+try : _len(strlen(pc)), _allocator(new char[_len + 1]) {
+//	copyArr(_allocator, pc, 0, 0, _len + 1);
+	strcpy(_allocator, pc);
 }	catch(...) {
-	delete[] pc;
+	delete[] _allocator;
 }
 
-String::String(const String& str): _len(str.length()), _allocator(new char[_len + 1]) {
+MyString::MyString(const MyString& str): _len(str.length()), _allocator(new char[_len + 1]) {
 	for (size_t i = 0; i < _len; ++i) {
 		(*this)[i] = str[i];
 	}
 	_allocator[_len] = '\0';
 }
 
-String::~String() {
+MyString::~MyString() {
 	delete[] _allocator;
 	_allocator = nullptr;
 }
 
-String& String::operator=(const String& str) {
+MyString& MyString::operator=(const MyString& str) {
 	if (this == &str) {
 		return *this;
 	}
@@ -37,27 +39,27 @@ String& String::operator=(const String& str) {
 	return *this;
 }
 
-char& String::operator[](const size_t index) {
+char& MyString::operator[](const size_t index) {
 	if (index >= _len) {
 		throw std::out_of_range("Index out of bounds");
 	}
 	return _allocator[index];
 }
 
-const char& String::operator[](const size_t index) const {
+const char& MyString::operator[](const size_t index) const {
 	if (index >= _len) {
 		throw std::out_of_range("Index out of bounds");
 	}
 	return _allocator[index];
 }
 
-size_t String::length() const {return _len;}
+size_t MyString::length() const {return _len;}
 
-void String::clear() {
+void MyString::clear() {
 	resize(0);
 }
 
-void String::resize(size_t newSize) {
+void MyString::resize(size_t newSize) {
 	char* newAllocator = new char[newSize + 1];
 	copyArr(newAllocator, _allocator, 0, 0, std::min(_len, newSize));
 	newAllocator[newSize] = '\0';
@@ -66,7 +68,7 @@ void String::resize(size_t newSize) {
 	_len = newSize;
 }
 
-void String::swap(String& other) {
+void MyString::swap(MyString& other) {
 	size_t tmpLen = length();
 	_len = other.length();
 	other._len = tmpLen;
@@ -76,32 +78,37 @@ void String::swap(String& other) {
 	other._allocator = tmpAllocator;
 }
 
-String& String::append(const String& str) {
-	size_t len = length();
-	resize(length() + str.length());
-	for (size_t i = 0; i < str.length(); ++i) {
-		(*this)[len + i] = str[i];
+MyString& MyString::append(const MyString& str) {
+	return append(str._allocator);
+}
+
+MyString& MyString::append(const char* str) {
+	size_t len1 = length();
+	size_t len2 = strlen(str);
+	resize(len1 + len2);
+	for (size_t i = 0; i < len2; ++i) {
+		(*this)[len1 + i] = str[i];
 	}
 	return *this;
 }
 
-String& String::append(const char c) {
+MyString& MyString::append(const char c) {
 	size_t len = length();
 	resize(length() + 1);
 	(*this)[len] = c;
 	return *this;
 }
 
-int String::compare(const String& other) const {
+int MyString::compare(const MyString& other) const {
 	bool equal = true;
 	size_t i = 0;
-	// while previous chars are equal and the end of either String is not reached
+	// while previous chars are equal and the end of either MyString is not reached
 	while (equal && (i < length()) && (i < other.length())) {
 		equal = (*this)[i] == other[i];
 		++i;
 	}
 	// if all previous chars are equal, then the loop terminated
-	// because the end of either String was reached
+	// because the end of either MyString was reached
 	// so the difference in length will be the result
 	if (equal) {
 		return static_cast<int>(length()) - static_cast<int>(other.length());
@@ -111,110 +118,104 @@ int String::compare(const String& other) const {
 	return (*this)[i - 1] - other[i - 1];
 }
 
-int String::substr(const String& sub) const {
+int MyString::substr(const MyString& sub) const {
+	return substr(sub._allocator);
+}
+
+int MyString::substr(const char* sub) const {
 	bool equal = true;
 	for (size_t i = 0; i < length(); ++i) {
-		for (size_t j = 0; j < sub.length(); ++j) {
+		for (size_t j = 0, subLen = strlen(sub); j < subLen; ++j) {
 			if ((*this)[i + j] != sub[j]) {
 				equal = false;
 				break;
 			}
 		}
 		if (equal) {
-			return i;
+			return static_cast<int>(i);
 		}
 		equal = true;
 	}
 	return -1;
 }
 
-String& String::insert(size_t pos, const String& sub) {
+MyString& MyString::insert(size_t pos, const MyString& sub) {
 	size_t newLen = length() + sub.length();
 	char* newAllocator = new char[newLen + 1];
 	copyArr(newAllocator, _allocator, 0, 0, pos);
 	copyArr(newAllocator, sub._allocator, pos, 0, sub.length());
 	copyArr(newAllocator, _allocator, pos + sub.length(), pos, length() - pos);
+	newAllocator[newLen] = '\0';
+
 	delete[] _allocator;
 	_allocator = newAllocator;
 	_len = newLen;
-	_allocator[_len] = '\0';
 	return *this;
 }
 
-size_t String::countLen(const char* pc) {
-	if (pc == nullptr) {
-		throw std::invalid_argument("Pointer not defined");
-	}
-	size_t i = 0;
-	while (pc[i] != '\0') {
-		++i;
-	}
-	return i;
-}
-
-void String::copyArr(char* dest, const char* src, const size_t destPos, const size_t srcPos, const size_t len) {
+void MyString::copyArr(char* dest, const char* src, const size_t destPos, const size_t srcPos, const size_t len) {
 	if (dest == nullptr || src == nullptr) {
 		throw std::invalid_argument("Pointer not defined");
 	}
-	for (size_t i = 0; i < len; ++i) {
-		dest[destPos + i] = src[srcPos + i];
-	}
+	strncpy(dest + destPos, src + srcPos, len);
 }
 
-String operator+(const String& str1, const String& str2) {
-	String res(str1);
+MyString operator+(const MyString& str1, const MyString& str2) {
+	MyString res(str1);
 	return res += str2;
 }
 
-String& operator+=(String& str1, const String& str2) {
+MyString& operator+=(MyString& str1, const MyString& str2) {
 	return str1.append(str2);
 }
 
-String& operator+=(String& str, const char c) {
+MyString& operator+=(MyString& str, const char c) {
 	return str.append(c);
 }
 
-bool operator==(const String& str1, const String& str2) {
+bool operator==(const MyString& str1, const MyString& str2) {
 	return str1.compare(str2) == 0;
 }
 
-bool operator!=(const String& str1, const String& str2) {
+bool operator!=(const MyString& str1, const MyString& str2) {
 	return !(str1 == str2);
 }
 
-bool operator<(const String& str1, const String& str2) {
+bool operator<(const MyString& str1, const MyString& str2) {
 	return str1.compare(str2) < 0;
 }
 
-bool operator<=(const String& str1, const String& str2) {
+bool operator<=(const MyString& str1, const MyString& str2) {
 	return str1.compare(str2) <= 0;
 }
 
-bool operator>(const String& arg1, const String& arg2) {
+bool operator>(const MyString& arg1, const MyString& arg2) {
 	return arg2 < arg1;
 }
 
-bool operator>=(const String& str1, const String& str2) {
+bool operator>=(const MyString& str1, const MyString& str2) {
 	return str2 <= str1;
 }
 
-std::ostream& operator<<(std::ostream& os, const String& str) {
+std::ostream& operator<<(std::ostream& os, const MyString& str) {
 	for (size_t i = 0; i < str.length(); ++i) {
 		os << str[i];
 	}
 	return os;
 }
 
-std::istream& operator>>(std::istream& is, String& str) {
-	std::cin.sync_with_stdio(false);
+std::istream& operator>>(std::istream& is, MyString& str) {
+	std::istream::sync_with_stdio(false);
 	char fst;
-	std::cin.get(fst);
-	size_t waiting = std::cin.rdbuf()->in_avail();
-	char* input = new char[waiting + 1];
+	is.get(fst);
+	auto length = static_cast<size_t>(is.rdbuf()->in_avail());
+
+	char* input = new char[length + 1];
 	input[0] = fst;
-	std::cin.read(input + 1, waiting);
-	input[waiting] = '\0';
-	str = String(input);
+	is.read(input + 1, length);
+	input[length] = '\0';
+
+	str = MyString(input);
 	delete[] input;
 	return is;
 }

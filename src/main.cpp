@@ -1,15 +1,15 @@
 #include <iostream>
-#include "string.h"
+#include "my_string.h"
 
 int main() {
 	// constructors
-	String s0;
+	MyString s0;
 	std::cout << s0 << ", len: " << s0.length() << std::endl;
-	String s1("my string");
+	MyString s1("my string");
 	std::cout << s1 << ", len: " << s1.length() << std::endl;
 	// copy constructor
-	const String cs(s1);
-	String s2(s1);
+	const MyString cs(s1);
+	MyString s2(s1);
 	std::cout << cs << std::endl;
 	std::cout << s2 << std::endl;
 	// assignment
@@ -35,8 +35,8 @@ int main() {
 	std::cout << " after resize: " << s2 << ", len: " << s2.length() << std::endl;
 
 	// swap
-	String one("one");
-	String twentyOne("twenty one");
+	MyString one("one");
+	MyString twentyOne("twenty one");
 	std::cout << "before swap: " << one << " and " << twentyOne << std::endl;
 	one.swap(twentyOne);
 	std::cout << " after swap: " << one << " and " << twentyOne << std::endl;
@@ -45,10 +45,12 @@ int main() {
 	std::cout << twentyOne << std::endl;
 	twentyOne.append('1');
 	std::cout << twentyOne << std::endl;
+	twentyOne.append("ttt");
+	std::cout << twentyOne << std::endl;
 	// compare
-	String abc("abc");
-	String abcc("abcc");
-	String cba("cba");
+	MyString abc("abc");
+	MyString abcc("abcc");
+	MyString cba("cba");
 	std::cout << abc << " compared to " << abcc << " : " << abc.compare(abcc) << std::endl;
 	std::cout << cba << " compared to " << abc << " : " << cba.compare(abc) << std::endl;
 	std::cout << abc << " compared to " << abc << " : " << abc.compare(abc) << std::endl;
@@ -56,13 +58,15 @@ int main() {
 	std::cout << abc << " == " << abc << " : " << (abc == abc) << std::endl;
 	std::cout << abc << " != " << abcc << " : " << (abc == abcc) << std::endl;
 	// substr
-	String sup("12345554371238123");
-	String sub1("11");
-	String sub2("5");
-	String sub3("123");
+	MyString sup("12345554371238123");
+	MyString sub1("11");
+	MyString sub2("5");
+	MyString sub3("123");
+	const char* sub4("55");
 	std::cout << "Position of " << sub1 << " in " << sup << " : " << sup.substr(sub1) << std::endl;
 	std::cout << "Position of " << sub2 << " in " << sup << " : " << sup.substr(sub2) << std::endl;
 	std::cout << "Position of " << sub3 << " in " << sup << " : " << sup.substr(sub3) << std::endl;
+	std::cout << "Position of " << sub4 << " in " << sup << " : " << sup.substr(sub4) << std::endl;
 	// insert
 	std::cout << "before insertion: " << sub1 << std::endl;
 	sub1.insert(1, sub3);
@@ -81,9 +85,10 @@ int main() {
 	std::cout << abc << std::endl;
 
 	// input operator
-	String input;
+	MyString input;
 	std::cout << "Input a string: ";
 	std::cin >> input;
 	std::cout << "Your string: " << input << ", len: " << input.length() << std::endl;
+
 	return 0;
 }
